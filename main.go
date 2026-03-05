@@ -16,6 +16,8 @@ func main() {
 	}
 
 	manager := todo.Manager{}
+	manager.Load() // load existing todos
+
 	command := os.Args[1]
 
 	switch command {
@@ -27,8 +29,11 @@ func main() {
 		}
 
 		task := os.Args[2]
-		manager.AddTodo(task)
-		manager.ListTodos()
+
+		id := manager.AddTodo(task)
+		manager.Save()
+
+		fmt.Println("Todo added successfully with ID:", id)
 
 	case "list":
 		manager.ListTodos()
@@ -40,9 +45,15 @@ func main() {
 		}
 
 		id, _ := strconv.Atoi(os.Args[2])
-		manager.MarkDone(id)
-		manager.ListTodos()
 
+		ok := manager.MarkDone(id)
+
+		if ok {
+			manager.Save()
+			fmt.Printf("✔ Todo %d marked as done\n", id)
+		} else {
+			fmt.Println("Todo not found")
+		}
 	case "delete":
 		if len(os.Args) < 3 {
 			fmt.Println("Please provide todo ID")
@@ -50,8 +61,15 @@ func main() {
 		}
 
 		id, _ := strconv.Atoi(os.Args[2])
-		manager.DeleteTodo(id)
-		manager.ListTodos()
+
+		ok := manager.DeleteTodo(id)
+
+		if ok {
+			manager.Save()
+			fmt.Printf("✔ Todo %d deleted successfully\n", id)
+		} else {
+			fmt.Println("Todo not found")
+		}
 
 	default:
 		fmt.Println("Unknown command")
